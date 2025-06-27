@@ -105,19 +105,55 @@ if data is not None and not data.empty:
     data['month'] = data[date_col].dt.to_period('M')
 
     # --- Categorization ---
-    def predict_category(description):
+    def keyword_categorize(desc, amt):
+        desc = str(desc).lower()
+        if amt > 0:
+            if 'salary' in desc or 'credit' in desc or 'neft' in desc:
+                return 'Salary/Income'
+            return 'Other Income'
+        else:
+            if 'grocery' in desc or 'supermarket' in desc or 'mart' in desc:
+                return 'Groceries'
+            if 'electric' in desc or 'water' in desc or 'gas' in desc or 'utility' in desc:
+                return 'Utilities'
+            if 'rent' in desc or 'lease' in desc:
+                return 'Rent'
+            if 'atm' in desc or 'cash' in desc:
+                return 'Cash Withdrawal'
+            if 'restaurant' in desc or 'food' in desc or 'cafe' in desc:
+                return 'Food & Dining'
+            if 'travel' in desc or 'uber' in desc or 'ola' in desc or 'flight' in desc:
+                return 'Travel'
+            if 'insurance' in desc:
+                return 'Insurance'
+            if 'emi' in desc or 'loan' in desc:
+                return 'Loan/EMI'
+            return 'Others'
+
+    def predict_category(row):
+        desc = row[desc_col]
+        amt = row[amount_col]
+        
         if not MODEL_LOADED:
-            return "Others"
+            return keyword_categorize(desc, amt)
+
         # Preprocess the description
-        cleaned_desc = str(description).lower().strip()
-        # Transform using the loaded vectorizer
-        desc_tfidf = vectorizer.transform([cleaned_desc])
+        cleaned_desc = str(desc).lower().strip()
+        
         # Predict using the loaded model
-        prediction = category_model.predict(desc_tfidf)
-        return prediction[0]
+        prediction = "Others"
+        if cleaned_desc:
+            desc_tfidf = vectorizer.transform([cleaned_desc])
+            prediction = category_model.predict(desc_tfidf)[0]
+        
+        # If model predicts "Others", try keyword-based as a fallback
+        if prediction == 'Others':
+            return keyword_categorize(desc, amt)
+        
+        return prediction
 
     if desc_col != "None":
-        data['category'] = data[desc_col].apply(predict_category)
+        data['category'] = data.apply(predict_category, axis=1)
     else:
         data['category'] = data[amount_col].apply(lambda amt: 'Other Income' if amt > 0 else 'Others')
 
