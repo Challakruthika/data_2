@@ -1,9 +1,31 @@
 Description,Category
-SWIGGY Order #1234,Food Delivery
-ZOMATO Dinner,Food Delivery
-Amazon Shopping,Shopping
-Flipkart Electronics,Shopping
-Uber Trip Fare,Transport
-BESCOM Electricity Bill,Utilities
-ICICI Salary Credited,Income
-LIC Premium Paid,Insurance
+"MONTHLY SALARY FOR SEPTEMBER","Salary/Income"
+"NEFT CREDIT FROM XYZ CORP","Salary/Income"
+"INTEREST PAYMENT","Other Income"
+"DIVIDEND RECEIVED","Other Income"
+"GROCERIES AT LOCAL SUPERMARKET","Groceries"
+"DAILY MART PURCHASE","Groceries"
+"ELECTRICITY BILL PAYMENT","Utilities"
+"WATER BILL","Utilities"
+"MONTHLY RENT FOR APARTMENT","Rent"
+"ATM WITHDRAWAL","Cash Withdrawal"
+"CASH FROM ATM","Cash Withdrawal"
+"DINNER AT ITALIAN RESTAURANT","Food & Dining"
+"LUNCH WITH FRIENDS AT CAFE","Food & Dining"
+"UBER RIDE TO AIRPORT","Travel"
+"FLIGHT TICKET TO NEW YORK","Travel"
+"LIFE INSURANCE PREMIUM","Insurance"
+"CAR INSURANCE PAYMENT","Insurance"
+"HOME LOAN EMI","Loan/EMI"
+"PERSONAL LOAN PAYMENT","Loan/EMI"
+"ONLINE PURCHASE FROM AMAZON","Others"
+"BOOKSTORE PURCHASE","Others"
+"RENT PAYMENT FOR OFFICE","Rent"
+"MORE GROCERIES","Groceries"
+"PHONE BILL","Utilities"
+"ATM CASH","Cash Withdrawal"
+"RESTAURANT BILL","Food & Dining"
+"BUS TICKET","Travel"
+"HEALTH INSURANCE","Insurance"
+"CAR LOAN","Loan/EMI"
+"ONLINE SUBSCRIPTION","Others"

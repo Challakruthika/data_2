@@ -6,20 +6,11 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LinearRegression
 from datetime import datetime
-import joblib
-
-# --- ML Model Setup for Categorization ---
-model = joblib.load("category_model.pkl")
-
-def categorize_transaction(desc):
-    try:
-        return model.predict([desc])[0]
-    except:
-        return "Others"
 
 # 1. Read and merge all CSV files
 all_files = glob.glob(os.path.join(os.getcwd(), '*.csv'))
 
+# List to hold DataFrames
 dfs = []
 for filename in all_files:
     try:
@@ -33,33 +24,32 @@ for filename in all_files:
 raw_data = pd.concat(dfs, ignore_index=True)
 
 # 2. Data Cleaning and Standardization
+# Try to standardize column names
 raw_data.columns = [col.lower().strip().replace(' ', '_') for col in raw_data.columns]
 
+# Guess likely column names
 possible_date_cols = [col for col in raw_data.columns if 'date' in col]
 possible_amount_cols = [col for col in raw_data.columns if 'amount' in col or 'withdrawal' in col or 'deposit' in col]
 possible_balance_cols = [col for col in raw_data.columns if 'balance' in col]
-possible_desc_cols = [col for col in raw_data.columns if 'desc' in col or 'narration' in col or 'particular' in col]
 
+# Use first found or fallback
 DATE_COL = possible_date_cols[0] if possible_date_cols else raw_data.columns[0]
 AMOUNT_COL = possible_amount_cols[0] if possible_amount_cols else raw_data.columns[1]
 BALANCE_COL = possible_balance_cols[0] if possible_balance_cols else None
-DESC_COL = possible_desc_cols[0] if possible_desc_cols else None
 
+# Parse dates
 raw_data[DATE_COL] = pd.to_datetime(raw_data[DATE_COL], errors='coerce')
 raw_data = raw_data.dropna(subset=[DATE_COL])
 
+# Try to ensure amount is numeric
 raw_data[AMOUNT_COL] = pd.to_numeric(raw_data[AMOUNT_COL], errors='coerce')
 raw_data = raw_data.dropna(subset=[AMOUNT_COL])
-
-# 2.1 Add ML-based category if possible
-if DESC_COL and "category" not in raw_data.columns:
-    raw_data["category"] = raw_data[DESC_COL].apply(categorize_transaction)
 
 # 3. Exploratory Data Analysis
 raw_data['month'] = raw_data[DATE_COL].dt.to_period('M')
 monthly = raw_data.groupby('month')[AMOUNT_COL].sum()
 
-plt.figure(figsize=(10, 5))
+plt.figure(figsize=(10,5))
 monthly.plot(kind='bar')
 plt.title('Monthly Net Flow (Income - Expenses)')
 plt.ylabel('Net Amount')
@@ -68,13 +58,13 @@ plt.savefig('monthly_net_flow.png')
 plt.close()
 
 # 4. AI Prediction: Predict next month's net flow
-X = np.arange(len(monthly)).reshape(-1, 1)
+X = np.arange(len(monthly)).reshape(-1,1)
 y = monthly.values
-model_lr = LinearRegression()
-model_lr.fit(X, y)
-next_month_pred = model_lr.predict([[len(monthly)]])[0]
+model = LinearRegression()
+model.fit(X, y)
+next_month_pred = model.predict([[len(monthly)]])[0]
 
-# 5. Anomaly Detection
+# 5. Anomaly Detection (Unusual Transactions)
 iso = IsolationForest(contamination=0.01, random_state=42)
 raw_data['anomaly'] = iso.fit_predict(raw_data[[AMOUNT_COL]])
 anomalies = raw_data[raw_data['anomaly'] == -1]
@@ -90,12 +80,12 @@ print(f'Number of anomalous transactions: {len(anomalies)}')
 # Top 5 largest expenses
 expenses = raw_data[raw_data[AMOUNT_COL] < 0].nsmallest(5, AMOUNT_COL)
 print('\nTop 5 largest expenses:')
-print(expenses[[DATE_COL, AMOUNT_COL, 'source_file'] + (['category'] if 'category' in expenses.columns else [])])
+print(expenses[[DATE_COL, AMOUNT_COL, 'source_file']])
 
 # Top 5 largest incomes
 incomes = raw_data[raw_data[AMOUNT_COL] > 0].nlargest(5, AMOUNT_COL)
 print('\nTop 5 largest incomes:')
-print(incomes[[DATE_COL, AMOUNT_COL, 'source_file'] + (['category'] if 'category' in incomes.columns else [])])
+print(incomes[[DATE_COL, AMOUNT_COL, 'source_file']])
 
 print('\nSee monthly_net_flow.png for a chart of your monthly net flow.')
 
@@ -106,4 +96,4 @@ else:
     print('Good job! Your predicted net flow for next month is positive.')
 
 if len(anomalies) > 0:
-    print('Review the anomalous transactions for possible errors or fraud.')
+    print('Review the anomalous transactions for possible errors or fraud.') 
